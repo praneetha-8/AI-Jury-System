@@ -21,7 +21,7 @@ export default async function handler(req: any, res: any) {
     const ai = getAI();
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash", // ✅ stable model
+      model: "gemini-1.5-flash-latest", // ✅ stable model
       contents: `Generate 5 different responses for:\n${prompt}`,
     });
 
