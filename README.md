@@ -1,20 +1,40 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+⚖️ AI Jury System
 
-# Run and deploy your AI Studio app
+A full-stack web application that evaluates AI-generated responses using a panel of simulated “AI Judges” along with human feedback. The system analyzes responses across multiple dimensions such as reasoning, clarity, and usefulness to produce a final verdict.
 
-This contains everything you need to run your app locally.
+🚀 Features
+🧠 Multi-agent evaluation (Logic, Clarity, Strict, Helpful judges)
+👤 Human-in-the-loop scoring
+📊 Response comparison dashboard
+⚡ Prompt-based response generation (AI or simulated)
+🏆 Final verdict based on aggregated scores
+🏗️ Tech Stack
+Frontend: React
+Backend: Node.js, Express
+Database: MongoDB
+Deployment: Vercel (Frontend), Render (Backend)
+⚙️ How It Works
+Enter a prompt
+Generate multiple responses
+AI Judges evaluate each response
+User adds ratings
+System computes final scores and selects the best response
+🛠️ Setup
+git clone <repo-link>
+cd client && npm install
+cd ../server && npm install
+npm run dev
+🌐 Deployment
+Frontend: Vercel
+Backend: Render
+🎯 Purpose
 
-View your app in AI Studio: https://ai.studio/apps/baf0f3d2-2f3e-480a-ad20-d578ebad0ba8
+This project demonstrates a multi-perspective evaluation system inspired by real-world AI model assessment workflows, combining structured scoring with human feedback.
 
-## Run Locally
+🔮 Future Scope
+Integration with real LLM APIs
+Advanced analytics & visualizations
+Custom evaluation metrics
+📌 Note
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Built within a 24-hour timeframe as part of a full-stack engineering assignment.
