@@ -12,8 +12,12 @@ export default async function handler(req: any, res: any) {
         model: "llama3-8b-8192",
         messages: [
           {
+            role: "system",
+            content: "Return EXACTLY 5 distinct responses as a numbered list (1. ... 2. ... 3. ...)"
+          },
+          {
             role: "user",
-            content: `Generate 5 different responses for:\n${prompt}`
+            content: prompt
           }
         ]
       })
@@ -21,16 +25,37 @@ export default async function handler(req: any, res: any) {
 
     const data = await response.json();
 
-    const text = data.choices?.[0]?.message?.content || "";
+    const text = data?.choices?.[0]?.message?.content || "";
 
-    const responses = text
-      .split("\n")
-      .filter((r: string) => r.trim().length > 0)
-      .slice(0, 5);
+    // 🔥 SMART PARSING (handles numbered responses)
+    let responses = text
+      .split(/\n?\d+\.\s/) // split by "1. ", "2. ", etc.
+      .map((r: string) => r.trim())
+      .filter((r: string) => r.length > 0);
+
+    // 🔁 fallback if model didn't follow numbering
+    if (responses.length < 2) {
+      responses = text
+        .split("\n")
+        .map((r: string) => r.trim())
+        .filter((r: string) => r.length > 0);
+    }
+
+    // 🚨 final safety fallback
+    if (responses.length === 0) {
+      responses = ["No response generated"];
+    }
+
+    // limit to 5
+    responses = responses.slice(0, 5);
+
+    // 🧪 debug (check in Vercel logs)
+    console.log("Generated responses:", responses);
 
     res.status(200).json(responses);
 
   } catch (err: any) {
+    console.error("Generate API Error:", err);
     res.status(500).json({ error: err.message });
   }
 }
