@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { auth, db, loginWithGoogle, logout, onAuthStateChanged, collection, addDoc, query, where, orderBy, onSnapshot, doc, updateDoc, setDoc, handleFirestoreError, OperationType, Timestamp, serverTimestamp, User } from './lib/firebase';
-import { generateAIResponses, judgeResponse } from './lib/gemini';
+import { generateAIResponses, judgeResponse } from './lib/api';
 import { JUDGES, JudgeId, Session, ResponseData, Evaluation } from './types';
 import { JudgeCard } from './components/JudgeCard';
 import { ScoreChart } from './components/ScoreChart';

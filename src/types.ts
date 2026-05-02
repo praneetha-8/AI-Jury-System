@@ -1,4 +1,4 @@
-export type JudgeId = 'logic' | 'clarity' | 'strict' | 'helpful';
+export type JudgeId = 'logic' | 'ethics' | 'risk';
 
 export interface Evaluation {
   id?: string;
@@ -34,30 +34,23 @@ export interface JudgePersona {
 export const JUDGES: JudgePersona[] = [
   {
     id: 'logic',
-    name: 'Logic Judge',
+    name: 'Logical Analysis',
     description: 'Evaluates reasoning quality, coherence, and factual consistency.',
     icon: 'Scale',
     color: 'blue'
   },
   {
-    id: 'clarity',
-    name: 'Clarity Judge',
-    description: 'Evaluates explanation clarity, readability, and structure.',
-    icon: 'Search',
-    color: 'emerald'
+    id: 'ethics',
+    name: 'Ethical Perspective',
+    description: 'Evaluates moral implications, safety, and human-centric values.',
+    icon: 'Gavel',
+    color: 'amber'
   },
   {
-    id: 'strict',
-    name: 'Strict Judge',
-    description: 'Gives harsh scoring, focusing on flaws and missed opportunities.',
+    id: 'risk',
+    name: 'Risk Sentinel',
+    description: 'Identifies potential hazards, hallucinations, and safety drifts.',
     icon: 'ShieldAlert',
     color: 'rose'
-  },
-  {
-    id: 'helpful',
-    name: 'Helpful Judge',
-    description: 'Evaluates usefulness, empathy, and practical applicability.',
-    icon: 'HeartHandshake',
-    color: 'amber'
   }
 ];

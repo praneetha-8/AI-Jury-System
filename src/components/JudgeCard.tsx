@@ -6,9 +6,8 @@ import { cn } from '../lib/utils';
 
 const iconMap = {
   Scale,
-  Search,
-  ShieldAlert,
-  HeartHandshake
+  Gavel,
+  ShieldAlert
 };
 
 export const JudgeCard = ({ 
