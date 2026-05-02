@@ -37,7 +37,7 @@ Return ONLY JSON:
 `;
 
     const result = await ai.models.generateContent({
-      model: "gemini-1.5-flash-latest", // ✅ fixed model
+      model: "gemini-2.0-flash", // ✅ fixed model
       contents: instruction,
     });
 
