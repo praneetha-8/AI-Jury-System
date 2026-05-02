@@ -1,0 +1,6 @@
+{
+  "name": "AI Jury System",
+  "description": "Multi-agent evaluation platform for benchmarking AI models through specialized judge personas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

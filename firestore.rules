@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Session validation
+    function isValidSession(data) {
+      return data.keys().hasAll(['prompt', 'createdAt', 'status', 'userId']) 
+        && data.keys().size() == 4
+        && data.prompt is string && data.prompt.size() <= 5000
+        && data.createdAt == request.time
+        && data.status in ['pending', 'generating', 'evaluating', 'completed']
+        && data.userId == request.auth.uid;
+    }
+
+    function isValidResponse(data) {
+      return data.keys().hasAll(['text', 'modelId', 'finalScore'])
+        && data.keys().size() == 3
+        && data.text is string && data.text.size() <= 20000
+        && data.modelId is string && data.modelId.size() <= 100
+        && (data.finalScore is number || data.finalScore is int);
+    }
+
+    function isValidEvaluation(data) {
+       return data.keys().hasAll(['judgeId', 'score', 'justification'])
+        && data.keys().size() == 3
+        && data.judgeId in ['logic', 'clarity', 'strict', 'helpful']
+        && (data.score is int || data.score is number) && data.score >= 1 && data.score <= 10
+        && data.justification is string && data.justification.size() <= 1000;
+    }
+
+    match /sessions/{sessionId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid; 
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidSession(incoming());
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && (
+        // Only allow status updates
+        incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+        && incoming().status in ['pending', 'generating', 'evaluating', 'completed']
+      );
+
+      match /responses/{responseId} {
+        allow get, list: if isSignedIn() && get(/databases/$(database)/documents/sessions/$(sessionId)).data.userId == request.auth.uid;
+        allow create: if isSignedIn() && isValidResponse(incoming()) && get(/databases/$(database)/documents/sessions/$(sessionId)).data.userId == request.auth.uid;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/sessions/$(sessionId)).data.userId == request.auth.uid && (
+           incoming().diff(existing()).affectedKeys().hasOnly(['userScore', 'finalScore'])
+        );
+
+        match /evaluations/{evaluationId} {
+          allow get, list: if isSignedIn() && get(/databases/$(database)/documents/sessions/$(sessionId)).data.userId == request.auth.uid;
+          allow create: if isSignedIn() && isValidEvaluation(incoming()) && get(/databases/$(database)/documents/sessions/$(sessionId)).data.userId == request.auth.uid;
+        }
+      }
+    }
+  }
+}
