@@ -34,7 +34,7 @@ export default async function handler(req: any, res: any) {
     `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash",
       contents: `${systemInstruction}\n\nPrompt: ${prompt}\n\nResponse to Evaluate: ${responseText}`,
       config: { responseMimeType: "application/json" }
     });
