@@ -1,45 +1,36 @@
-import { GoogleGenAI } from "@google/genai";
-
-let aiClient: GoogleGenAI | null = null;
-
-function getAI() {
-  if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY missing");
-    aiClient = new GoogleGenAI({ apiKey });
-  }
-  return aiClient;
-}
-
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
     const { prompt } = req.body;
-    const ai = getAI();
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash", // ✅ stable model
-      contents: `Generate 5 different responses for:\n${prompt}`,
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        messages: [
+          {
+            role: "user",
+            content: `Generate 5 different responses for:\n${prompt}`
+          }
+        ]
+      })
     });
 
-    const text = response.text || "";
+    const data = await response.json();
 
-    // ✅ ALWAYS return array (frontend expects this)
+    const text = data.choices?.[0]?.message?.content || "";
+
     const responses = text
       .split("\n")
-      .map((r) => r.trim())
-      .filter((r) => r.length > 0)
+      .filter((r: string) => r.trim().length > 0)
       .slice(0, 5);
 
-    return res.status(200).json(responses);
+    res.status(200).json(responses);
 
-  } catch (error: any) {
-    console.error("Generate API Error:", error);
-    return res.status(500).json({
-      error: error.message || "Failed to generate responses",
-    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 }
