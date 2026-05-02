@@ -1,65 +1,51 @@
-import { GoogleGenAI } from "@google/genai";
-
-let aiClient: GoogleGenAI | null = null;
-
-function getAI() {
-  if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY missing");
-    aiClient = new GoogleGenAI({ apiKey });
-  }
-  return aiClient;
-}
-
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
     const { prompt, responseText, judgeId } = req.body;
-    const ai = getAI();
 
     const judgePrompts = {
-      logic: "Evaluate logical correctness and clarity.",
-      ethics: "Evaluate ethical implications and safety.",
-      risk: "Evaluate risks, hallucinations, and reliability.",
+      logic: "Evaluate logical correctness.",
+      ethics: "Evaluate ethical concerns.",
+      risk: "Evaluate risks and hallucinations."
     };
 
     const instruction = `
-${judgePrompts[judgeId as keyof typeof judgePrompts] || judgePrompts.logic}
+${judgePrompts[judgeId] || judgePrompts.logic}
 
 Prompt: ${prompt}
 Response: ${responseText}
 
-Return ONLY JSON:
+Return JSON:
 { "score": number (1-10), "justification": "short reason" }
 `;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.0-flash", // ✅ fixed model
-      contents: instruction,
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192",
+        messages: [{ role: "user", content: instruction }]
+      })
     });
 
-    const text = result.text || "";
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "";
 
-    // ✅ SAFE PARSE (no crash)
     let parsed;
     try {
       parsed = JSON.parse(text);
     } catch {
       parsed = {
         score: 7,
-        justification: text.slice(0, 200),
+        justification: text
       };
     }
 
-    return res.status(200).json(parsed);
+    res.status(200).json(parsed);
 
-  } catch (error: any) {
-    console.error("Judge API Error:", error);
-    return res.status(500).json({
-      error: error.message || "Failed to evaluate",
-    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 }
