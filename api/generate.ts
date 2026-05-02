@@ -13,7 +13,7 @@ export default async function handler(req: any, res: any) {
         messages: [
           {
             role: "system",
-            content: "Return EXACTLY 5 distinct responses as a numbered list (1. ... 2. ... 3. ...)"
+            content: "Generate EXACTLY 5 different responses. Separate each response clearly with '###'."
           },
           {
             role: "user",
@@ -25,15 +25,17 @@ export default async function handler(req: any, res: any) {
 
     const data = await response.json();
 
+    console.log("RAW GROQ:", data); // 🔥 debug
+
     const text = data?.choices?.[0]?.message?.content || "";
 
-    // 🔥 SMART PARSING (handles numbered responses)
+    // 🔥 SPLIT USING CUSTOM DELIMITER
     let responses = text
-      .split(/\n?\d+\.\s/) // split by "1. ", "2. ", etc.
+      .split("###")
       .map((r: string) => r.trim())
       .filter((r: string) => r.length > 0);
 
-    // 🔁 fallback if model didn't follow numbering
+    // fallback if model ignores format
     if (responses.length < 2) {
       responses = text
         .split("\n")
@@ -41,21 +43,19 @@ export default async function handler(req: any, res: any) {
         .filter((r: string) => r.length > 0);
     }
 
-    // 🚨 final safety fallback
+    // final safety
     if (responses.length === 0) {
       responses = ["No response generated"];
     }
 
-    // limit to 5
     responses = responses.slice(0, 5);
 
-    // 🧪 debug (check in Vercel logs)
-    console.log("Generated responses:", responses);
+    console.log("PARSED:", responses); // 🔥 debug
 
-    res.status(200).json(responses);
+    return res.status(200).json(responses);
 
   } catch (err: any) {
     console.error("Generate API Error:", err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 }
